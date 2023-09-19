@@ -25,7 +25,7 @@ class EncoderDecoder(LightningModule):
 
         self.use_deepspeed = self.config.compute_strategy.startswith("deepspeed")
         self.use_ddp = self.config.compute_strategy.startswith("ddp")
-        self.load_model()
+        self.load_model() # 从checkpoint load 权重
 
         self._last_global_step_saved = -1
 
@@ -287,7 +287,7 @@ class EncoderDecoder(LightningModule):
                     for batch_output in outputs:
                         for outputs1 in gathered_outputs:
                             tmp+=outputs1
-                    outputs = tmp
+                    outputs = tmp #这是在干嘛，使用val的时候把output扩张了平方倍？？
                 else:
                     outputs = [batch_output for outputs in gathered_outputs for batch_output in outputs] #origs
 
@@ -315,15 +315,34 @@ class EncoderDecoder(LightningModule):
                 idx_set.add(idx)
             for key, values in accumulated.items():
                 accumulated[key] = [v for v, m in zip(values, valid_mask) if m]
-            
+            # valid_mask 把之前复制的又去重了，暂时看不出为什么，目前的val我仅使用一个线程
             # compute and log results
             metrics = self.dataset_reader.compute_metric(accumulated)
 
         else:
             metrics = {}
 
-        self.save_model()
-        
+        # self.save_model()
+        if not (self.use_deepspeed or self.use_ddp) or dist.get_rank() == 0:
+            self.log_dict(metrics)
+            result_fname=self.config.test_pred_file
+            with open(result_fname,'w') as outfile:
+                for key,value in accumulated.items():
+                    outfile.write(f"{key}:{value}\n")
+        # current_rank = dist.get_rank() if dist.is_available() and dist.is_initialized() else -1
+
+        # print(f"Starting validation_epoch_end in Rank {current_rank}")
+
+        # if not (self.use_deepspeed or self.use_ddp) or current_rank == 0:
+        #     self.log_dict(metrics)
+        #     # result_fname = self.config.test_pred_file
+        #     # with open(result_fname, 'w') as outfile:
+        #     #     for key, value in accumulated.items():
+        #     #         outfile.write(f"{key}:{value}\n")
+        #     # print(f"File written in Rank {current_rank}")
+
+        # print(f"Ending validation_epoch_end in Rank {current_rank}")
+
         return metrics
 
     def configure_optimizers(self):

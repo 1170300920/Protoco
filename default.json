@@ -21,7 +21,7 @@
     "load_weight":"pretrained_checkpoints/t03b_ia3_finish.pt",
     "exp_name": "t03b_fever",
     "dataset_offline":"data_dir",
-    "origin_model": "bigscience/T0_3B",
+    "origin_model": "/home/yhwu/ProToCo/t03B",
     "compute_precision": "fp32",
     "lora_scaling_rank": 1,
     "lora_rank": 0,

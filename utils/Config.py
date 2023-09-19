@@ -11,11 +11,16 @@ class Config(object):
         self.allow_skip_exp = True
         self.seed = 0
         self.num_gpu = 2
-
+        # Load model
+        self.modelpath=""
+        
         # Model Configs
         self.model = "EncDec"
         self.max_seq_len = 200
-        self.origin_model = "bigscience/T0_3B"
+        # self.origin_model = "bigscience/T0_3B"
+
+        self.origin_model = "/home/yhwu/ProToCo/t03B"
+        # self.origin_model = "pretrained_checkpoints/t03b_ia3_finish.pt"
         self.load_weight = ""
         self.output_hidden_states = True
 
@@ -87,7 +92,7 @@ class Config(object):
             if eval:
                 try:
                     v = ast.literal_eval(v)
-                except ValueError:
+                except Exception as e:
                     v = v
             else:
                 v = v

@@ -31,20 +31,20 @@ class BaseDatasetReader(object):
         self.dataset_stash = dataset_stash
         self.selection = None
 
-        self.templates = DatasetTemplates(*self.dataset_stash)
+        self.templates = DatasetTemplates(*self.dataset_stash) # prompt 模板s
         self.train_template = self.get_template(self.config.train_template_idx)
         self.eval_template = self.get_template(self.config.eval_template_idx)
-        self.save_data_file = config.save_data_file
+        self.save_data_file = config.save_data_file # true
 
 
     def get_template(self, template_idx):
-        template_names = self.templates.all_template_names
+        template_names = self.templates.all_template_names #prompt模板名字列表
         if template_idx >= 0:
             return self.templates[template_names[template_idx]]
         elif template_idx == -1:
 
             list_idx = []
-            list_templates = []
+            list_templates = [] # Template object list
             for idx, template_name in enumerate(template_names):
                 if self.templates[template_name].metadata.original_task:
                     list_idx.append(idx)

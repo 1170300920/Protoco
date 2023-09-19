@@ -2,6 +2,7 @@ import torch
 import json
 import numpy as np
 from pytorch_lightning import LightningDataModule
+from torch.utils.data.distributed import DistributedSampler
 
 
 
@@ -28,7 +29,7 @@ class FinetuneDatasetWithTemplate(torch.utils.data.dataset.Dataset):
         else:
             template = self.templates
 
-        example = self.dataset[key]
+        example = self.dataset[key] # 第key条数据
 
         if "idx" not in example:
             example["idx"] = example["id"]
@@ -45,10 +46,10 @@ class FinetuneDatasetWithTemplate(torch.utils.data.dataset.Dataset):
         verification_input_ids = None
         answer_choices_ids = None
 
-        example["label"] = self.lable_mapping[example["label"]]
-        input_str, _ = template.apply(example)
+        example["label"] = self.lable_mapping[example["label"]] # supoort:0, NEI:1, refute:2
+        input_str, _ = template.apply(example) # 把前提和假设代入模板
     
-        answer_choices1 = template.get_answer_choices_list(example)
+        answer_choices1 = template.get_answer_choices_list(example) # 模板给出的回答选项，eg. ['True', 'Inconclusive', 'False']
         assert len(answer_choices1) == self.config.n_ways
 
         if not self.val:
@@ -90,18 +91,24 @@ class FinetuneDatasetWithTemplate(torch.utils.data.dataset.Dataset):
             v_label = [example["label"],con_l[example["label"]][1],con_l[example["label"]][2],con_l[example["label"]][3]]
 
         if verification_input_ids is None:
+            # 使用分词器将input_str转换为token IDs
+            # return_tensors="pt": 这告诉分词器返回PyTorch张量 
+            # truncation=True: 如果输入字符串的token数量超过分词器的最大长度，它将被截断。
+            # add_special_tokens=self.add_special_tokens: 这确定是否应添加特殊的开始和结束token（例如，对于BERT模型，它们分别是[CLS]和[SEP]）
+            # .input_ids: 从分词器返回的结果中提取token IDs，squeeze(0)用于移除批次维度，将形状从(1, sequence_length)更改为(sequence_length,)
             verification_input_ids = self.tokenizer(
                 input_str, return_tensors="pt", truncation=True, add_special_tokens=self.add_special_tokens
                 ).input_ids.squeeze(0)
 
-        if v_label is None:
+        if v_label is None: # gold label的mapping id
             v_label = torch.LongTensor([example["label"]])
         
-        if idx is None:
+        if idx is None: # 这条数据的id
             idx = int(example["idx"])
             idx = torch.LongTensor([idx])
       
         if answer_choices_ids is None:
+            # 每个选择字串都张量化的列表
             answer_choices_ids = [
                 self.tokenizer(
                     answer_choice, return_tensors="pt", truncation=True, add_special_tokens=self.add_special_tokens
@@ -134,7 +141,7 @@ def create_collate_fn(pad_token_id, pretrain,val=False):
 
         if not pretrain:
 
-            flat_answer_choice_ids = [choice for list_choices in answer_choices_ids for choice in list_choices]
+            flat_answer_choice_ids = [choice for list_choices in answer_choices_ids for choice in list_choices] # len=3*8=24
             num_choice = [len(list_choices) for list_choices in answer_choices_ids]
 
             if verification_input_ids[0] is not None:
@@ -191,7 +198,7 @@ class FinetuneDataModule(LightningDataModule):
             self.train_dataset1 = self.dataset_reader.read_few_shot_dataset()
         else:
             self.train_dataset1 = self.dataset_reader.read_orig_dataset("train")
-        self.dev_dataset1 = self.dataset_reader.read_orig_dataset("validation")
+        self.dev_dataset1 = self.dataset_reader.read_orig_dataset("validation") # {'id': 3, 'claim': '1,000 genomes project enables mapping of genetic sequence variation consisting of rare variants with larger penetrance effects than common variants.', 'gold_evidence_text': 'Rare Variants Create Synthetic Genome-Wide Associations: We propose as an alternative explanation that variants much less common than the associated one may create "synthetic associations" by occurring, stochastically, more often in association with one of the alleles at the common site versus the other allele.Rare Variants Create Synthetic Genome-Wide Associations: We show that they are not only possible, but inevitable, and that under simple but reasonable genetic models, they are likely to account for or contribute to many of the recently identified signals reported in genome-wide association studies.Rare Variants Create Synthetic Genome-Wide Associations: In conclusion, uncommon or rare genetic variants can easily create synthetic associations that are credited to common variants, and this possibility requires careful consideration in the interpretation and follow up of GWAS signals.', 'label': 'SUPPORT'}
 
         val_flag=False if self.config.stage==2 else True
         self.train_dataset = FinetuneDatasetWithTemplate(
@@ -217,12 +224,15 @@ class FinetuneDataModule(LightningDataModule):
         )
 
     def val_dataloader(self):
+        sampler = DistributedSampler(self.dev_dataset, shuffle=False)
         return torch.utils.data.DataLoader(
             self.dev_dataset,
             batch_size=self.config.eval_batch_size,
             shuffle=False,
+            sampler=sampler, 
             collate_fn=create_collate_fn(self.tokenizer.pad_token_id, pretrain=False, val=True),
             num_workers=min([self.config.eval_batch_size, self.config.num_workers]),
+            # num_workers=0
         )
     
 
