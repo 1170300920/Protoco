@@ -25,17 +25,10 @@ def main(config):
     dataset_reader = get_dataset_reader(config)
     datamodule = FinetuneDataModule(config, tokenizer, dataset_reader)
     model = EncoderDecoder(config, tokenizer, model, dataset_reader)
-    check_point=torch.load(config.modelpath)
-    # print(check_point.keys())
-    # print("!!!!!!!!!!!!")
-    # print(model.state_dict().keys())
-    # print("!!!!!!!!!!!!")
-    # print(check_point.keys()==model.state_dict().keys())
-    model.load_state_dict(check_point,strict=False)
-    
+    check_point=torch.load(config.modelpath) 
+    print(f"load modelpath:{config.modelpath}") 
+    model.load_state_dict(check_point,strict=False)    
     logger = TensorBoardLogger(config.exp_dir, name="log") 
-
-
     trainer = Trainer(
         enable_checkpointing=False,
         # gpus=torch.cuda.device_count(), #
@@ -43,7 +36,6 @@ def main(config):
         amp_backend="native",
         strategy=config.compute_strategy,
         logger=logger,
-        # logger=False,
         log_every_n_steps=4,
         max_steps=config.num_steps,
         min_steps=config.num_steps,
@@ -63,8 +55,8 @@ if __name__=='__main__':
     
     config = Config(args.config_files, args.kwargs)
     # config.load_weight=""
-    config.num_steps=0
-    config.eval_before_training=True
+    # config.num_steps=0
+    # config.eval_before_training=True
     print(config.to_json())
     set_seeds(config.seed)
     main(config)

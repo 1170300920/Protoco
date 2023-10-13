@@ -46,9 +46,12 @@ def main(config):
         max_steps=config.num_steps,
         min_steps=config.num_steps,
         num_sanity_val_steps=-1 if config.eval_before_training else 0,
-        check_val_every_n_epoch=config.eval_epoch_interval,
+        # check_val_every_n_epoch=config.eval_epoch_interval,
+        check_val_every_n_epoch =100000,  # 我不想验证
+        # check_val_every_n_steps=len(model.train_dataloader()) # 训练结束时验证
         accumulate_grad_batches=config.grad_accum_factor,
         gradient_clip_val=config.grad_clip_norm,
+        # validate_on_train_epoch_end=False,
     )
     trainer.fit(model, datamodule)
     # if config.stage==2:

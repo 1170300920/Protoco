@@ -31,7 +31,7 @@ class Config(object):
         self.few_shot_random_seed = 0
         self.train_template_idx = -1
         self.eval_template_idx = -1
-        self.batch_size = 1
+        self.batch_size = 4
         self.eval_batch_size = 4
         self.num_workers = 8
         self.dataset_offline="../data_dir"
@@ -52,7 +52,7 @@ class Config(object):
         self.mc_loss = 0
         self.unlikely_loss = 0
         self.length_norm = 0
-        self.grad_accum_factor = 1
+        self.grad_accum_factor = 2
         self.zero_shot = False
         self.stage = 1
 

@@ -1,7 +1,7 @@
 {
     "dataset": "scifact",
     "sample_num": 10000000,
-    "batch_size": 1,
+    "batch_size": 4,
     "eval_batch_size": 8,
     "grad_accum_factor": 2,
     "num_shot": 6,

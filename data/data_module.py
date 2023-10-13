@@ -124,10 +124,10 @@ def create_collate_fn(pad_token_id, pretrain,val=False):
     def collate_fn(batch):
         if not pretrain:
             answer_choices_ids_t, verification_input_ids_t,v_labels_t,idx_t = zip(*batch)
-
+            
         if not val:
             answer_choices_ids = [xx for x in answer_choices_ids_t for xx in x ]
-            verification_input_ids = [xx for x in verification_input_ids_t for xx in x ]
+            verification_input_ids = [xx for x in verification_input_ids_t for xx in x ] # 有4个input，很相似但不同，应该是论文中的异构输入
             v_labels = [torch.tensor([xx]) for x in v_labels_t for xx in x ]
             idx = [torch.tensor([xx]) for x in idx_t for xx in x ]
 
@@ -224,12 +224,12 @@ class FinetuneDataModule(LightningDataModule):
         )
 
     def val_dataloader(self):
-        sampler = DistributedSampler(self.dev_dataset, shuffle=False)
+        # sampler = DistributedSampler(self.dev_dataset, shuffle=False)
         return torch.utils.data.DataLoader(
             self.dev_dataset,
             batch_size=self.config.eval_batch_size,
             shuffle=False,
-            sampler=sampler, 
+            # sampler=sampler, 
             collate_fn=create_collate_fn(self.tokenizer.pad_token_id, pretrain=False, val=True),
             num_workers=min([self.config.eval_batch_size, self.config.num_workers]),
             # num_workers=0

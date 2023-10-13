@@ -24,8 +24,8 @@ do
                     r=$((${st}/(${shot}/4)))
                     g=2
                 fi
-                python -u pl_train.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage1 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} batch_size=1 grad_accum_factor=${g} num_steps=${st} eval_batch_size=4 num_shot=${shot} eval_epoch_interval=${r}
-                python -u pl_train.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage2 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} batch_size=1 grad_accum_factor=${g} num_steps=${st} eval_batch_size=4 num_shot=${shot} eval_epoch_interval=${r} stage=2 load_weight=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage1/finish.pt
+                python -u pl_train.py -k eval_before_training=True  exp_name=${ds}_shots${shot}_seed${seed}_fs_stage1 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} batch_size=1 grad_accum_factor=2 num_steps=${st} eval_batch_size=4 num_shot=${shot} eval_epoch_interval=${r}
+                python -u pl_train.py -k eval_before_training=True  exp_name=${ds}_shots${shot}_seed${seed}_fs_stage2 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} batch_size=1 grad_accum_factor=2 num_steps=${st} eval_batch_size=4 num_shot=${shot} eval_epoch_interval=${r} stage=2 load_weight=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage1/finish.pt
             done
         done
     done

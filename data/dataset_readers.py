@@ -142,7 +142,7 @@ class BaseDatasetReader(object):
         selected_data = selected_data1+selected_data2+selected_data3
         return selected_data
 
-    def compute_metric(self, accumulated):
+    def compute_metric(self, accumulated,result_fname):
         labels = []
         pre = []
 
@@ -157,4 +157,11 @@ class BaseDatasetReader(object):
         print(f"Test F1 : {f1_sc}")
         if self.config.num_steps == 0:
             print(self.config.load_weight)
+
+        with open(result_fname,'w') as outfile:
+                print(f"Writing to {result_fname}")
+                outfile.write(f"Test F1 : {f1_sc}\n")
+                for key,value in accumulated.items():
+                    outfile.write(f"{key}:{value}\n")
+
         return {"Test F1": f1_sc}

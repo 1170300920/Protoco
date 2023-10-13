@@ -10,7 +10,23 @@ do
     do
         for seed in 0 2 3 4
         do
-            python -u my_validate.py -k modelpath=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage2/finish.pt
+            for st in 1500
+            do
+                if [[ ${shot} -eq 3 ]]
+                then
+                    r=$((${st}/2))
+                    g=1
+                elif [[ ${shot} -eq 6 ]]
+                then
+                    r=$((${st}/2))
+                    g=2
+                else
+                    r=$((${st}/(${shot}/4)))
+                    g=2
+                fi
+                # python -u my_validate.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage2 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} batch_size=1 grad_accum_factor=${g} num_steps=${st} eval_batch_size=4 num_shot=${shot} eval_epoch_interval=${r} stage=2 modelpath=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage2/finish.pt
+                python -u pl_train.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage2 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} eval_before_training=True num_steps=0 load_weight=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage2/finish.pt
+            done
         done
     done
 done
