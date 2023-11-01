@@ -2,7 +2,7 @@
 export CUDA_LAUNCH_BLOCKING=1
 export CUDA_DEVICE_ORDER=PCI_BUS_ID
 export CUDA_VISIBLE_DEVICES=0,1
-export OUTPUT_PATH=output
+export OUTPUT_PATH=warmup
 
 for ds in scifact fever vc
 do 
@@ -25,7 +25,8 @@ do
                     g=2
                 fi
                 # python -u my_validate.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage2 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} batch_size=1 grad_accum_factor=${g} num_steps=${st} eval_batch_size=4 num_shot=${shot} eval_epoch_interval=${r} stage=2 modelpath=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage2/finish.pt
-                python -u pl_train.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage2 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} eval_before_training=True num_steps=0 load_weight=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage2/finish.pt
+                # python -u pl_train.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage1 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} eval_before_training=True num_steps=0 load_weight=${OUTPUT_PATH}/${ds}_shots${shot}_seed${seed}_fs_stage1/finish.pt
+                python -u pl_train.py -k exp_name=${ds}_shots${shot}_seed${seed}_fs_stage1 few_shot_random_seed=${seed} seed=${seed} dataset=${ds} eval_before_training=True num_steps=0 load_weight=pretrained_checkpoints/warmup/${ds}_shots${shot}_seed${seed}.pt
             done
         done
     done

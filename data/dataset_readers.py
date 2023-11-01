@@ -159,9 +159,9 @@ class BaseDatasetReader(object):
             print(self.config.load_weight)
 
         with open(result_fname,'w') as outfile:
-                print(f"Writing to {result_fname}")
-                outfile.write(f"Test F1 : {f1_sc}\n")
-                for key,value in accumulated.items():
-                    outfile.write(f"{key}:{value}\n")
+            print(f"Writing to {result_fname}")
+            outfile.write(f"Test F1 : {f1_sc}\n")
+            for key,value in accumulated.items():
+                outfile.write(f"{key}:{value}\n")
 
         return {"Test F1": f1_sc}

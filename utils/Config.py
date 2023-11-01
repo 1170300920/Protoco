@@ -19,7 +19,8 @@ class Config(object):
         self.max_seq_len = 200
         # self.origin_model = "bigscience/T0_3B"
 
-        self.origin_model = "/home/yhwu/ProToCo/t03B"
+        # self.origin_model = "/home/yhwu/ProToCo/t03B"
+        self.origin_model = "/home/yhwu/Protoco_new/Protoco/t03B"
         # self.origin_model = "pretrained_checkpoints/t03b_ia3_finish.pt"
         self.load_weight = ""
         self.output_hidden_states = True
@@ -34,7 +35,7 @@ class Config(object):
         self.batch_size = 4
         self.eval_batch_size = 4
         self.num_workers = 8
-        self.dataset_offline="../data_dir"
+        self.dataset_offline="/home/yhwu/Protoco_new/Protoco/data_dir"
         self.sample_num=100000
         self.n_ways = 3
         self.save_data_file = False

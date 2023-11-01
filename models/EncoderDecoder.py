@@ -30,6 +30,10 @@ class EncoderDecoder(LightningModule):
         self._last_global_step_saved = -1
 
     def training_step(self, batch, batch_idx):
+        # import os
+        # os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:64" 
+        # if hasattr(torch.cuda, 'empty_cache'):
+        #     torch.cuda.empty_cache()
 
         if self.config.mc_loss > 0 or self.config.unlikely_loss > 0:
 
